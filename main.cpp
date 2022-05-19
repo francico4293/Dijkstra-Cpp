@@ -18,13 +18,24 @@ class Dijkstra {
 
             while (graphIter != this->graph.end()) {
                 if (graphIter->first == this->source) {
-                    this->distanceTable.insert({graphIter->first, 0});
+                    distanceTable.insert({graphIter->first, 0});
                 } else {
-                    this->distanceTable.insert({graphIter->first, INT_MAX});
+                    distanceTable.insert({graphIter->first, INT_MAX});
                 }
 
                 graphIter = next(graphIter, 1);
             }
+
+            map<char, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
+            
+            while (linkIter != this->graph.find(this->source)->second.end()) {
+                this->distanceTable.find(linkIter->first)->second = linkIter->second;
+                linkIter = next(linkIter, 1);
+            }
+        }
+
+        void initPathTable(void) {
+            
         }
     
     public:
