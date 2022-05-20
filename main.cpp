@@ -15,7 +15,7 @@ class Dijkstra {
         map<char, char> routingTable;
         string source;
 
-        struct comparitor {
+        struct comparator {
             bool operator() (vector<string>& a, vector<string>& b) {
                 return stoi(a[0]) > stoi(b[0]);
             }
@@ -33,13 +33,6 @@ class Dijkstra {
 
                 graphIter = next(graphIter, 1);
             }
-
-            map<string, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
-            
-            while (linkIter != this->graph.find(this->source)->second.end()) {
-                this->distanceTable.find(linkIter->first)->second = linkIter->second;
-                linkIter = next(linkIter, 1);
-            }
         }
 
         void initPathTable(void) {
@@ -48,13 +41,6 @@ class Dijkstra {
             while (graphIter != this->graph.end()) {
                 this->pathTable.insert({graphIter->first, ""});
                 graphIter = next(graphIter, 1);
-            }
-
-            map<string, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
-
-            while (linkIter != this->graph.find(this->source)->second.end()) {
-                this->pathTable.find(linkIter->first)->second = this->source;
-                linkIter = next(linkIter, 1);
             }
         }
     
@@ -119,7 +105,7 @@ class Dijkstra {
 
         void dijkstra(void) {
             map<string, bool> visited;
-            priority_queue<vector<string>, vector<vector<string>>, comparitor> pq;
+            priority_queue<vector<string>, vector<vector<string>>, comparator> pq;
             this->initDistanceTable();
             this->initPathTable();
 
@@ -130,7 +116,7 @@ class Dijkstra {
             visited.insert({this->source, true});
             map<string, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
             while (linkIter != this->graph.find(this->source)->second.end()) {
-                pq.push({to_string(linkIter->second), linkIter->first});
+                pq.push({to_string(linkIter->second), linkIter->first, this->source});
                 linkIter = next(linkIter, 1);
             }
 
@@ -139,9 +125,22 @@ class Dijkstra {
                 pq.pop();
 
                 int distance = stoi(front[0]);
-                string node = front[1];
+                string currNode = front[1];
+                string prevNode = front[2];
 
-                cout << "Distance: " << distance << ", " << "Node: " << node << endl;
+                if (visited.find(currNode) != visited.end()) {
+                    continue;
+                }
+
+                if (this->distanceTable.find(currNode)->second < distance) {
+                    continue;
+                }
+
+                visited.insert({currNode, true});
+                this->distanceTable.find(currNode)->second = distance;
+                this->pathTable.find(currNode)->second = prevNode;
+
+                // TODO: add neighbor nodes to priority queue
             }
         }
 };
