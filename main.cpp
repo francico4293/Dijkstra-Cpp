@@ -4,6 +4,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <algorithm>
 using namespace std;
 
 
@@ -12,7 +13,7 @@ class Dijkstra {
         map<string, map<string, int>> graph;
         map<string, string> pathTable;
         map<string, int> distanceTable;
-        map<char, char> routingTable;
+        map<string, string> routingTable;
         string source;
 
         struct comparator {
@@ -41,6 +42,15 @@ class Dijkstra {
             while (graphIter != this->graph.end()) {
                 this->pathTable.insert({graphIter->first, ""});
                 graphIter = next(graphIter, 1);
+            }
+        }
+
+        void initRoutingTable(void) {
+            map<string, map<string, int>>::iterator mapIter = this->graph.begin();
+
+            while (mapIter != this->graph.end()) {
+                this->routingTable.insert({mapIter->first, ""});
+                mapIter = next(mapIter, 1);
             }
         }
     
@@ -100,18 +110,50 @@ class Dijkstra {
         }
 
         void getRoutingTable(void) {
+            map<string, string>::iterator routingIter = this->routingTable.begin();
+
+            cout << "Routing Table For " << this->source << ":" << endl;
+            while (routingIter != this->routingTable.end()) {
+                cout << "\t" << routingIter->first << ": ";
+                if (routingIter->second == "") {
+                    cout << "*" << endl;
+                } else {
+                    cout << routingIter->second << endl;
+                }
+                routingIter = next(routingIter, 1);
+            }
+            cout << endl;
+        }
+
+        void showPathAndLength(string destination) {
+            string path;
+            string dest = destination;
+
+            while (destination != this->source) {
+                path.append(destination);
+                destination = this->pathTable.find(destination)->second;
+            }
+            path.append(destination);
+
+            reverse(path.begin(), path.end());
+
+            cout << "Shortest Path from " << this->source << " to " << dest << ": " << path << endl;
+            cout << "Path Length from " << this->source << " to " << dest << ": " << this->distanceTable.find(dest)->second << endl;
+        }
+
+        void updateRoutingTable(string currNode) {
 
         }
 
         void dijkstra(void) {
             map<string, bool> visited;
             priority_queue<vector<string>, vector<vector<string>>, comparator> pq;
+
             this->initDistanceTable();
             this->initPathTable();
+            this->initRoutingTable();
 
-            this->getGraph();
-            this->getDistanceTable();
-            this->getPathTable();
+            this->getRoutingTable();
 
             visited.insert({this->source, true});
             map<string, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
@@ -140,7 +182,11 @@ class Dijkstra {
                 this->distanceTable.find(currNode)->second = distance;
                 this->pathTable.find(currNode)->second = prevNode;
 
-                // TODO: add neighbor nodes to priority queue
+                linkIter = this->graph.find(currNode)->second.begin();
+                while (linkIter != this->graph.find(currNode)->second.end()) {
+                    pq.push({to_string(linkIter->second + distance), linkIter->first, currNode});
+                    linkIter = next(linkIter, 1);
+                }
             }
         }
 };
@@ -158,6 +204,7 @@ int main(int argc, char* argv[]) {
 
     Dijkstra d = Dijkstra(network, "D");
     d.dijkstra();
+    d.showPathAndLength("E");
 
     return 0;
 }
