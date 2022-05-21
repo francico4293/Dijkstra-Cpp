@@ -112,7 +112,7 @@ class Dijkstra {
         void getRoutingTable(void) {
             map<string, string>::iterator routingIter = this->routingTable.begin();
 
-            cout << "Routing Table For " << this->source << ":" << endl;
+            cout << "Routing Table For Node " << this->source << ":" << endl;
             while (routingIter != this->routingTable.end()) {
                 cout << "\t" << routingIter->first << ": ";
                 if (routingIter->second == "") {
@@ -142,7 +142,15 @@ class Dijkstra {
         }
 
         void updateRoutingTable(string currNode) {
+            string firstHop;
+            map<string, string>::iterator nodeToUpdate = this->routingTable.find(currNode);
 
+            while (currNode != this->source) {
+                firstHop = currNode;
+                currNode = this->pathTable.find(currNode)->second;
+            }
+
+            nodeToUpdate->second = firstHop;
         }
 
         void dijkstra(void) {
@@ -152,8 +160,6 @@ class Dijkstra {
             this->initDistanceTable();
             this->initPathTable();
             this->initRoutingTable();
-
-            this->getRoutingTable();
 
             visited.insert({this->source, true});
             map<string, int>::iterator linkIter = this->graph.find(this->source)->second.begin();
@@ -181,6 +187,7 @@ class Dijkstra {
                 visited.insert({currNode, true});
                 this->distanceTable.find(currNode)->second = distance;
                 this->pathTable.find(currNode)->second = prevNode;
+                this->updateRoutingTable(currNode);
 
                 linkIter = this->graph.find(currNode)->second.begin();
                 while (linkIter != this->graph.find(currNode)->second.end()) {
@@ -202,9 +209,21 @@ int main(int argc, char* argv[]) {
         {"G", map<string, int>{{"D", 3}, {"F", 5}}}
     };
 
-    Dijkstra d = Dijkstra(network, "D");
+    map<string, map<string, int>> network2 = {
+        {"A", map<string, int>{{"B", 5}, {"C", 3}, {"E", 1}, {"F", 2}}},
+        {"B", map<string, int>{{"A", 5}, {"C", 1}}},
+        {"C", map<string, int>{{"B", 1}, {"A", 3}, {"E", 5}, {"D", 5}}},
+        {"D", map<string, int>{{"C", 5}, {"H", 3}}},
+        {"E", map<string, int>{{"A", 1}, {"C", 5}, {"H", 4}, {"G", 2}}},
+        {"F", map<string, int>{{"A", 2}, {"G", 3}}},
+        {"G", map<string, int>{{"F", 3}, {"H", 1}, {"E", 2}}},
+        {"H", map<string, int>{{"D", 3}, {"E", 4}, {"G", 1}}}
+    };
+
+    Dijkstra d = Dijkstra(network2, "H");
     d.dijkstra();
-    d.showPathAndLength("E");
+    d.showPathAndLength("B");
+    d.getRoutingTable();
 
     return 0;
 }
